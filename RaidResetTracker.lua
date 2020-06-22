@@ -72,27 +72,30 @@ if PHASE >= 6 then
 	table.insert(RAID_ORDER, 1, 533)
 end
 
-local lockState = {unpack(RAID_ORDER)}
+local resetState = {unpack(RAID_ORDER)}
 local _GetNumSavedInstances = _G.GetNumSavedInstances
 _G.GetNumSavedInstances = function()
-	lockState = {unpack(RAID_ORDER)}
-	return #lockState
+	resetState = {unpack(RAID_ORDER)}
+	return #resetState
 end
 
 local _GetSavedInstanceInfo = _G.GetSavedInstanceInfo
 _G.GetSavedInstanceInfo = function(index)
 	if index <= _GetNumSavedInstances() then
 		local name = _GetSavedInstanceInfo(index)
-		for i, v in ipairs(lockState) do
+		for i, v in ipairs(resetState) do
 			if GetRealZoneText(v) == name then
-				table.remove(lockState, i)
+				table.remove(resetState, i)
 				break
 			end
 		end
 		return _GetSavedInstanceInfo(index)
 	end
 
-	local id = lockState[index - _GetNumSavedInstances()]
+	local id = resetState[index - _GetNumSavedInstances()]
+	if not id then
+		return _GetSavedInstanceInfo(index)
+	end
 	local epoch = GetServerTime()
 	local startTime = ALL_US_REALMS[GetRealmName()] and RESET_TIMES[id].start_us or RESET_TIMES[id].start_eu
 	local freq = RESET_TIMES[id].freq
