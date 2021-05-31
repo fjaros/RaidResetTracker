@@ -1,13 +1,13 @@
 
+-- Only works with Burning Crusade Classic WoW
+if WOW_PROJECT_ID ~= WOW_PROJECT_BURNING_CRUSADE_CLASSIC then
+	return
+end
 local VERSION = GetBuildInfo()
 local MAJOR, MINOR, PHASE = strsplit(".", VERSION)
 MAJOR = tonumber(MAJOR)
 MINOR = tonumber(MINOR)
 PHASE = tonumber(PHASE)
--- Only works with Classic WoW
-if MAJOR ~= 1 or MINOR ~= 13 then
-	return
-end
 
 -- Due to localization, it's easier to keep track of all US/AUS/Oceanic realms
 local ALL_US_REALMS = {
@@ -19,57 +19,37 @@ end
 
 local RESET_TIMES = {}
 local RAID_ORDER = {}
-if PHASE >= 1 then
-	RESET_TIMES[409] = { -- MC
+local function addResetTime(id, freq)
+	if not freq then
+		freq = 7
+	end
+	RESET_TIMES[id] = {
 		start_us = 1592323200,
 		start_eu = 1592377200,
-		freq = 86400 * 7,
+		freq = 86400 * freq,
 	}
-	RESET_TIMES[249] = { -- Onyxia
-		start_us = 1592496000,
-		start_eu = 1592377200,
-		freq = 86400 * 5,
-	}
-	table.insert(RAID_ORDER, 409)
-	table.insert(RAID_ORDER, 249)
+	table.insert(RAID_ORDER, 1, id)
+end
+
+if PHASE >= 1 then
+	addResetTime(544) -- Magtheridon's Lair
+	addResetTime(565) -- Gruul's Lair
+	addResetTime(532) -- Karazhan
+end
+if PHASE >= 2 then
+	addResetTime(548) -- Serpentshrine Cavern
+	addResetTime(550) -- Tempest Keep
 end
 if PHASE >= 3 then
-	RESET_TIMES[469] = { -- BWL
-		start_us = 1592323200,
-		start_eu = 1592377200,
-		freq = 86400 * 7,
-	}
-	table.insert(RAID_ORDER, 1, 469)
+	addResetTime(534) -- The Battle for Mount Hyjal
+	addResetTime(564) -- The Black Temple
 end
 if PHASE >= 4 then
-	RESET_TIMES[309] = { -- ZG
-		start_us = 1592496000,
-		start_eu = 1592722800,
-		freq = 86400 * 3,
-	}
-	table.insert(RAID_ORDER, 309)
+	-- This reset time will probably need to change once we find out when it is during phase launch
+	addResetTime(568, 3) -- Zul'Aman
 end
 if PHASE >= 5 then
-	RESET_TIMES[531] = { -- AQ40
-		start_us = 1592323200,
-		start_eu = 1592377200,
-		freq = 86400 * 7,
-	}
-	RESET_TIMES[509] = { -- AQ20
-		start_us = 1592496000,
-		start_eu = 1592722800,
-		freq = 86400 * 3,
-	}
-	table.insert(RAID_ORDER, 1, 531)
-	table.insert(RAID_ORDER, #RAID_ORDER - 1, 509)
-end
-if PHASE >= 6 then
-	RESET_TIMES[533] = { -- Naxx
-		start_us = 1592323200,
-		start_eu = 1592377200,
-		freq = 86400 * 7,
-	}
-	table.insert(RAID_ORDER, 1, 533)
+	addResetTime(580) -- The Sunwell
 end
 
 local resetState = {unpack(RAID_ORDER)}
