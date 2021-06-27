@@ -11,23 +11,17 @@ PHASE = tonumber(PHASE)
 
 -- Due to localization, it's easier to keep track of all US/AUS/Oceanic realms
 local ALL_US_REALMS = {
-	"Anathema","Arcanite Reaper","Arugal","Ashkandi","Atiesh","Azuresong","Benediction","Bigglesworth","Blaumeux","Bloodsail Buccaneers","Deviate Delight","Earthfury","Faerlina","Fairbanks","Felstriker","Grobbulus","Heartseeker","Herod","Incendius","Kirtonos","Kromcrush","Kurinaxx","Kurinnaxx","Loatheb","Mankrik","Myzrael","Netherwind","Old Blanchy","Pagle","Rattlegore","Remulos","Skeram","Smolderweb","Stalagg","Sulfuras","Sul'thraze","Thalnos","Thunderfury","Westfall","Whitemane","Windseeker","Yojamba"
+	"Anathema","Arcanite Reaper","Arugal","Ashkandi","Atiesh","Azuresong","Benediction","Bigglesworth","Blaumeux","Bloodsail Buccaneers","Deviate Delight","Earthfury","Faerlina","Fairbanks","Felstriker","Grobbulus","Heartseeker","Herod","Incendius","Kirtonos","Kromcrush","Kurinnaxx","Loatheb","Mankrik","Myzrael","Netherwind","Old Blanchy","Pagle","Rattlegore","Remulos","Skeram","Smolderweb","Stalagg","Sulfuras","Sul'thraze","Thalnos","Thunderfury","Westfall","Whitemane","Windseeker","Yojamba"
 }
 for _, k in ipairs(ALL_US_REALMS) do
 	ALL_US_REALMS[k] = true
 end
 
-local RESET_TIMES = {}
+local RESET_TIME_US = 1624374000
+local RESET_TIME_EU = RESET_TIME_US + 57600
 local RAID_ORDER = {}
-local function addResetTime(id, freq)
-	if not freq then
-		freq = 7
-	end
-	RESET_TIMES[id] = {
-		start_us = 1592323200,
-		start_eu = 1592377200,
-		freq = 86400 * freq,
-	}
+
+local function addResetTime(id)
 	table.insert(RAID_ORDER, 1, id)
 end
 
@@ -45,21 +39,38 @@ if PHASE >= 3 then
 	addResetTime(564) -- The Black Temple
 end
 if PHASE >= 4 then
-	-- This reset time will probably need to change once we find out when it is during phase launch
-	addResetTime(568, 3) -- Zul'Aman
+	-- This reset time might need to change once we find out when it is during phase launch
+	addResetTime(568) -- Zul'Aman
 end
 if PHASE >= 5 then
 	addResetTime(580) -- The Sunwell
 end
 
-local resetState = {unpack(RAID_ORDER)}
-local _GetNumSavedInstances = _G.GetNumSavedInstances
-_G.GetNumSavedInstances = function()
-	resetState = {unpack(RAID_ORDER)}
-	return #resetState
+local function getFreq(id)
+	local freq = id == 568 and 3 or 7
+	return freq * 86400
 end
 
+local _GetNumSavedInstances = _G.GetNumSavedInstances
 local _GetSavedInstanceInfo = _G.GetSavedInstanceInfo
+local resetState
+
+_G.GetNumSavedInstances = function()
+	resetState = {unpack(RAID_ORDER)}
+	local unsavedRaids = #resetState
+	local numRealSavedInstances = _GetNumSavedInstances()
+	for i = 1, numRealSavedInstances do
+		local name = _GetSavedInstanceInfo(i)
+		for _, v in ipairs(resetState) do
+			if GetRealZoneText(v) == name then
+				unsavedRaids = unsavedRaids - 1
+				break
+			end
+		end
+	end
+	return unsavedRaids + numRealSavedInstances
+end
+
 _G.GetSavedInstanceInfo = function(index)
 	if index <= _GetNumSavedInstances() then
 		local name = _GetSavedInstanceInfo(index)
@@ -77,8 +88,8 @@ _G.GetSavedInstanceInfo = function(index)
 		return _GetSavedInstanceInfo(index)
 	end
 	local epoch = GetServerTime()
-	local startTime = ALL_US_REALMS[GetRealmName()] and RESET_TIMES[id].start_us or RESET_TIMES[id].start_eu
-	local freq = RESET_TIMES[id].freq
+	local startTime = ALL_US_REALMS[GetRealmName()] and RESET_TIME_US or RESET_TIME_EU
+	local freq = getFreq(id)
 	local nextResetCoef = math.ceil((epoch - startTime) / freq)
 	local resetTime = startTime + (freq * nextResetCoef) - epoch
 	return GetRealZoneText(id), "NOT SAVED", resetTime, 0, false, false, 0, true
