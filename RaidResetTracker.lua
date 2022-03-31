@@ -46,6 +46,18 @@ if PHASE >= 5 then
 	addResetTime(580) -- The Sunwell
 end
 
+local function getStartTime(id)
+	if ALL_US_REALMS[GetRealmName()] then
+		return RESET_TIME_US
+	else
+		if id == 568 then
+			return RESET_TIME_EU - 86400
+		else
+			return RESET_TIME_EU
+		end
+	end
+end
+
 local function getFreq(id)
 	local freq = id == 568 and 3 or 7
 	return freq * 86400
@@ -88,7 +100,7 @@ _G.GetSavedInstanceInfo = function(index)
 		return _GetSavedInstanceInfo(index)
 	end
 	local epoch = GetServerTime()
-	local startTime = ALL_US_REALMS[GetRealmName()] and RESET_TIME_US or RESET_TIME_EU
+	local startTime = getStartTime(id)
 	local freq = getFreq(id)
 	local nextResetCoef = math.ceil((epoch - startTime) / freq)
 	local resetTime = startTime + (freq * nextResetCoef) - epoch
