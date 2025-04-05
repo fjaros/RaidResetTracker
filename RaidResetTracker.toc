@@ -1,7 +1,7 @@
 ## Title: Raid Reset Tracker
-## Author: Büttercüp-Grobbulus
-## Notes: World of Warcraft Burning Crusade Classic Addon to extend raid info with information about raids without a current lockout.
-## Version: 2.2
-## Interface: 20504
+## Author: Buttercup-Nightslayer
+## Notes: World of Warcraft Classic Addon to extend raid info tab for raids without a current lockout.
+## Version: 3.0
+## Interface: 11506
 
 RaidResetTracker.lua
