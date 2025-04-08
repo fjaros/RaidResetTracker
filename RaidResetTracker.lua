@@ -6,15 +6,6 @@ end
 
 local RESET_TIME_US = 1744124400
 local RESET_TIME_EU = RESET_TIME_US + 57600
-local NAME_ID_MAP = {
-	["Onyxia's Lair"] = 249,
-	["Zul'Gurub"] = 309,
-	["Molten Core"] = 409,
-	["Blackwing Lair"] = 469,
-	["Ruins of Ahn'Qiraj"] = 509,
-	["Ahn'Qiraj Temple"] = 531,
-	["Naxxramas"] = 533,
-}
 local RAID_ORDER = {}
 local SAVED_INSTANCES = {}
 
@@ -65,8 +56,8 @@ local _GetSavedInstanceInfo = _G.GetSavedInstanceInfo
 _G.GetNumSavedInstances = function()
 	SAVED_INSTANCES = {}
 	for i = 1, _GetNumSavedInstances() do
-		local name = _GetSavedInstanceInfo(i)
-		SAVED_INSTANCES[NAME_ID_MAP[name]] = i
+		local id = select(14, _GetSavedInstanceInfo(i))
+		SAVED_INSTANCES[id] = i
 	end
 	return #RAID_ORDER
 end
