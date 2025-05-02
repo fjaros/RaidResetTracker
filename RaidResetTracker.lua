@@ -25,19 +25,6 @@ local function is20(id)
 	return id == 309 or id == 509
 end
 
-local function getStartTime(id)
-	local reset
-	if GetCurrentRegion() == 1 then
-		reset = RESET_TIME_US
-	else
-		reset = RESET_TIME_EU
-	end
-	if is20(id) then
-		reset = reset + 3600
-	end
-	return reset
-end
-
 local function getFreq(id)
 	local freq
 	if is20(id) then
@@ -69,7 +56,7 @@ _G.GetSavedInstanceInfo = function(index)
 	end
 
 	local epoch = GetServerTime()
-	local startTime = getStartTime(id)
+	local startTime = GetCurrentRegion() == 1 and RESET_TIME_US or RESET_TIME_EU
 	local freq = getFreq(id)
 	local nextResetCoef = math.ceil((epoch - startTime) / freq)
 	local resetTime = startTime + (freq * nextResetCoef) - epoch
